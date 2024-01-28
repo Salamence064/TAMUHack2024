@@ -1,7 +1,7 @@
 #include "display.h"
 #include "transactions.h"
 
-int main(void) {
-    
+int main() {
+
     return 0;
 };
