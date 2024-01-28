@@ -29,7 +29,6 @@ typedef struct {
 // * Transactional Functions
 // * ===========================
 
-// todo update for when I add file pointer shit
 /**
  * @brief Process and log a parsed transaction.
  * 
@@ -66,7 +65,7 @@ static inline void processTransaction(const Transaction trans) {
             // log the data
             FILE* fptr;
             fptr = fopen("log.txt", "a");
-            fprintf(fptr, "\nAccount %u depositted $%f for %s", trans.accID, trans.amount, trans.name);
+            fprintf(fptr, "\nAccount %u depositted $%f for %s.", trans.accID, trans.amount, trans.name);
             fclose(fptr);
 
             break;
@@ -74,12 +73,34 @@ static inline void processTransaction(const Transaction trans) {
 
         case WITHDRAWL: {
             // withdraw the specified amount
-            FILE* fptr;
-            fptr = fopen("accounts.txt", "r");
-            fclose(fptr);
+            std::ifstream f("accounts.txt", std::ios::in);
+            std::string line;
+            std::vector<std::string> lines;
+
+            bool flag = 1;
+
+            // grab the data
+            while (getline(f, line)) {
+                if (flag && !line.rfind(std::to_string(trans.accID))) {
+                    size_t i = line.find(' ') + 1;
+                    line = line.substr(0, i) + std::to_string(std::stof(line.substr(i, line.find('\n') - i)) - trans.amount) + "\n";
+                    flag = 0;
+                }
+
+                lines.push_back(line);
+            }
+
+            f.close();
+
+            // rewrite the data
+            std::ofstream out("accounts.txt", std::ios::out | std::ios::trunc);
+            for (size_t i = 0; i < lines.size(); ++i) { out << lines[i]; }
+            out.close();
 
             // log the data
+            FILE* fptr;
             fptr = fopen("log.txt", "a");
+            fprintf(fptr, "\nAccount %u withdrew $%f to merchant account.", trans.accID, trans.amount);
             fclose(fptr);
 
             break;
@@ -87,12 +108,34 @@ static inline void processTransaction(const Transaction trans) {
 
         case TRANSFER: {
             // transfer the specified amount
-            FILE* fptr;
-            fptr = fopen("accounts.txt", "r");
-            fclose(fptr);
+            std::ifstream f("accounts.txt", std::ios::in);
+            std::string line;
+            std::vector<std::string> lines;
+
+            bool flag = 1;
+
+            // grab the data
+            while (getline(f, line)) {
+                if (flag && !line.rfind(std::to_string(trans.accID))) {
+                    size_t i = line.find(' ') + 1;
+                    line = line.substr(0, i) + std::to_string(std::stof(line.substr(i, line.find('\n') - i)) - trans.amount) + "\n";
+                    flag = 0;
+                }
+
+                lines.push_back(line);
+            }
+
+            f.close();
+
+            // rewrite the data
+            std::ofstream out("accounts.txt", std::ios::out | std::ios::trunc);
+            for (size_t i = 0; i < lines.size(); ++i) { out << lines[i]; }
+            out.close();
 
             // log the data
+            FILE* fptr;
             fptr = fopen("log.txt", "a");
+            fprintf(fptr, "\nAccount %u transferred $%f to savings.", trans.accID, trans.amount);
             fclose(fptr);
             
             break;
