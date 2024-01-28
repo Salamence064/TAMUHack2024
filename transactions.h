@@ -30,9 +30,6 @@ typedef struct {
 // * Transactional Functions
 // * ===========================
 
-// todo come back and ensure inputs are valid
-// todo also force round to 2 decimal places
-
 /**
  * @brief Process and log a parsed transaction.
  * 
@@ -52,7 +49,7 @@ static inline void processTransaction(const Transaction trans) {
             while (getline(f, line)) {
                 if (flag && !line.rfind(std::to_string(trans.accID))) {
                     size_t i = line.find(' ') + 1;
-                    line = line.substr(0, i) + std::to_string(trans.amount + std::stof(line.substr(i, line.find('\n') - i)));
+                    line = line.substr(0, i) + std::to_string(std::stof(line.substr(i)) + trans.amount);
                     flag = 0;
                 }
 
@@ -87,7 +84,22 @@ static inline void processTransaction(const Transaction trans) {
             while (getline(f, line)) {
                 if (flag && !line.rfind(std::to_string(trans.accID))) {
                     size_t i = line.find(' ') + 1;
-                    line = line.substr(0, i) + std::to_string(std::stof(line.substr(i, line.find('\n') - i)) - trans.amount);
+                    float amt = std::stof(line.substr(i)) - trans.amount;
+
+                    if (amt < trans.amount) {
+                        printf("Insufficient funds.");
+                        f.close();
+
+                        // log the failed withdrawl
+                        FILE* fptr;
+                        fptr = fopen("log.txt", "a");
+                        fprintf(fptr, "Account %u attempted to withdraw $%f to merchant account, but had insufficient funds.\n", trans.accID, trans.amount);
+                        fclose(fptr);
+
+                        return;
+                    }
+
+                    line = line.substr(0, i) + std::to_string(amt);
                     flag = 0;
                 }
 
@@ -122,7 +134,22 @@ static inline void processTransaction(const Transaction trans) {
             while (getline(f, line)) {
                 if (flag && !line.rfind(std::to_string(trans.accID))) {
                     size_t i = line.find(' ') + 1;
-                    line = line.substr(0, i) + std::to_string(std::stof(line.substr(i, line.find('\n') - i)) - trans.amount);
+                    float amt = std::stof(line.substr(i)) - trans.amount;
+
+                    if (amt < trans.amount) {
+                        printf("Insufficient funds.\n");
+                        f.close();
+
+                        // log the failed withdrawl
+                        FILE* fptr;
+                        fptr = fopen("log.txt", "a");
+                        fprintf(fptr, "Account %u attempted to transfer $%f to savings, but had insufficient funds.\n", trans.accID, trans.amount);
+                        fclose(fptr);
+
+                        return;
+                    }
+
+                    line = line.substr(0, i) + std::to_string(amt);
                     flag = 0;
                 }
 
@@ -138,7 +165,7 @@ static inline void processTransaction(const Transaction trans) {
 
             // log the data
             FILE* fptr;
-            fptr = fopen("log.txt", "a");
+            fptr = fopen("log.txt\n", "a");
             fprintf(fptr, "Account %u transferred $%f to savings.\n", trans.accID, trans.amount);
             fclose(fptr);
             
