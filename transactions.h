@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <iostream>
 #include <stdio.h>
 #include <fstream>
@@ -20,7 +21,7 @@ enum TransType {
 typedef struct {
     uint32_t accID; // The unique ID for the account associated with this transaction.
     TransType type; // The type of transaction that occurred.
-    char* name; // The merchant information of the transaction.
+    const char* name; // The merchant information of the transaction.
     float amount; // The amount of money handled in this transaction.
 } Transaction;
 
@@ -28,6 +29,9 @@ typedef struct {
 // * ===========================
 // * Transactional Functions
 // * ===========================
+
+// todo come back and ensure inputs are valid
+// todo also force round to 2 decimal places
 
 /**
  * @brief Process and log a parsed transaction.
@@ -48,7 +52,7 @@ static inline void processTransaction(const Transaction trans) {
             while (getline(f, line)) {
                 if (flag && !line.rfind(std::to_string(trans.accID))) {
                     size_t i = line.find(' ') + 1;
-                    line = line.substr(0, i) + std::to_string(trans.amount + std::stof(line.substr(i, line.find('\n') - i))) + "\n";
+                    line = line.substr(0, i) + std::to_string(trans.amount + std::stof(line.substr(i, line.find('\n') - i)));
                     flag = 0;
                 }
 
@@ -59,13 +63,13 @@ static inline void processTransaction(const Transaction trans) {
 
             // rewrite the data
             std::ofstream out("accounts.txt", std::ios::out | std::ios::trunc);
-            for (size_t i = 0; i < lines.size(); ++i) { out << lines[i]; }
+            for (size_t i = 0; i < lines.size(); ++i) { out << lines[i] << "\n"; }
             out.close();
 
             // log the data
             FILE* fptr;
             fptr = fopen("log.txt", "a");
-            fprintf(fptr, "\nAccount %u depositted $%f for %s.", trans.accID, trans.amount, trans.name);
+            fprintf(fptr, "Account %u depositted $%f for %s.\n", trans.accID, trans.amount, trans.name);
             fclose(fptr);
 
             break;
@@ -83,7 +87,7 @@ static inline void processTransaction(const Transaction trans) {
             while (getline(f, line)) {
                 if (flag && !line.rfind(std::to_string(trans.accID))) {
                     size_t i = line.find(' ') + 1;
-                    line = line.substr(0, i) + std::to_string(std::stof(line.substr(i, line.find('\n') - i)) - trans.amount) + "\n";
+                    line = line.substr(0, i) + std::to_string(std::stof(line.substr(i, line.find('\n') - i)) - trans.amount);
                     flag = 0;
                 }
 
@@ -94,13 +98,13 @@ static inline void processTransaction(const Transaction trans) {
 
             // rewrite the data
             std::ofstream out("accounts.txt", std::ios::out | std::ios::trunc);
-            for (size_t i = 0; i < lines.size(); ++i) { out << lines[i]; }
+            for (size_t i = 0; i < lines.size(); ++i) { out << lines[i] << "\n"; }
             out.close();
 
             // log the data
             FILE* fptr;
             fptr = fopen("log.txt", "a");
-            fprintf(fptr, "\nAccount %u withdrew $%f to merchant account.", trans.accID, trans.amount);
+            fprintf(fptr, "Account %u withdrew $%f to merchant account.\n", trans.accID, trans.amount);
             fclose(fptr);
 
             break;
@@ -118,7 +122,7 @@ static inline void processTransaction(const Transaction trans) {
             while (getline(f, line)) {
                 if (flag && !line.rfind(std::to_string(trans.accID))) {
                     size_t i = line.find(' ') + 1;
-                    line = line.substr(0, i) + std::to_string(std::stof(line.substr(i, line.find('\n') - i)) - trans.amount) + "\n";
+                    line = line.substr(0, i) + std::to_string(std::stof(line.substr(i, line.find('\n') - i)) - trans.amount);
                     flag = 0;
                 }
 
@@ -129,13 +133,13 @@ static inline void processTransaction(const Transaction trans) {
 
             // rewrite the data
             std::ofstream out("accounts.txt", std::ios::out | std::ios::trunc);
-            for (size_t i = 0; i < lines.size(); ++i) { out << lines[i]; }
+            for (size_t i = 0; i < lines.size(); ++i) { out << lines[i] << "\n"; }
             out.close();
 
             // log the data
             FILE* fptr;
             fptr = fopen("log.txt", "a");
-            fprintf(fptr, "\nAccount %u transferred $%f to savings.", trans.accID, trans.amount);
+            fprintf(fptr, "Account %u transferred $%f to savings.\n", trans.accID, trans.amount);
             fclose(fptr);
             
             break;
