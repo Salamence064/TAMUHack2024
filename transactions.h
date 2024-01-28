@@ -49,7 +49,7 @@ static inline void processTransaction(const Transaction trans) {
             while (getline(f, line)) {
                 if (flag && !line.rfind(std::to_string(trans.accID))) {
                     size_t i = line.find(' ') + 1;
-                    line = line.substr(0, i) + std::to_string(trans.amount + std::stof(line.substr(i), line.find('\n') - i)) + "\n";
+                    line = line.substr(0, i) + std::to_string(trans.amount + std::stof(line.substr(i, line.find('\n') - i))) + "\n";
                     flag = 0;
                 }
 
